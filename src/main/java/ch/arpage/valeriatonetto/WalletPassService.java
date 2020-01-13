@@ -2,10 +2,7 @@ package ch.arpage.valeriatonetto;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.imageio.*;
 import java.io.*;
@@ -15,86 +12,45 @@ import java.io.*;
 public class WalletPassService {
 
     @Context ServletContext servletContext;
+    private CustomerDataService dataService = CustomerDataService.getInstance();
 
-    @GET
-    @Path("example/{clientName}")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response greetClient(@PathParam("clientName") String name) {
-        String output = "Hi " + name;
-        return Response.status(200).entity(output).build();
-    }
-
-    @GET
-    @Path("get")
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response displayImage() {
-
-//        ServletContext cntx= req.getServletContext();
-//        // Get the absolute path of the image
-//        String filename = cntx.getRealPath("src/main/webapp/images/image.png");
-//        // retrieve mimeType dynamically
-//        String mime = cntx.getMimeType(filename);
-//        if (mime == null) {
-//            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//            return Response.status(500).entity(String.valueOf(resp)).build();
-//        }
-//
-//        resp.setContentType(mime);
-//
-//        File file = new File(filename);
-//        resp.setContentLength((int)file.length());
-//
-//        FileInputStream in = null;
-//        try {
-//            in = new FileInputStream(file);
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//
-//        OutputStream out = null;
-//        try {
-//            out = resp.getOutputStream();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        // Copy the contents of the file to the output stream
-//        byte[] buf = new byte[1024];
-//        int count = 0;
-//        try {
-//            if (in != null) {
-//                while ((count = in.read(buf)) >= 0) {
-//                    if (out != null) {
-//                        out.write(buf, 0, count);
-//                    }
-//                }
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        try {
-//            if (out != null) {
-//                out.close();
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        try {
-//            if (in != null) {
-//                in.close();
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        return Response.status(200).entity(String.valueOf(resp)).build();
+//    @GET
+//    @Path("example/{clientName}")
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response greetClient(@PathParam("clientName") String name) {
+//        String output = "Hi " + name;
+//        return Response.status(200).entity(output).build();
 //    }
-        String filepath = servletContext.getRealPath("images/image.png");
+
+//    @GET
+//    @Path("get")
+//    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+//    public Response downloadPass() {
+//        String filepath = servletContext.getRealPath("images/image.png");
+//        File file = new File(filepath);
+//        return Response.ok(file, MediaType.APPLICATION_OCTET_STREAM)
+//                .header("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"") //optional
+//                .build();
+//    }
+
+    @GET
+    @Path("download/{filename}")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response downloadPass(@PathParam("filename") String filename) {
+        String filepath = servletContext.getRealPath("images/" + filename);
         File file = new File(filepath);
         return Response.ok(file, MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"") //optional
                 .build();
+    }
+
+    @POST
+    @Path("submit/")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String createCustomer(@FormParam("name") String name,
+                                 @FormParam("address") String address,
+                                 @FormParam("phone-number") String phoneNumber) {
+        return dataService.addCustomer(name, address, phoneNumber);
     }
 }
